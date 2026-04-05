@@ -8,6 +8,8 @@ jobs:
   deploy:
     name: Deploy
     runs-on: ubuntu-latest
+    env:
+      DATABASE_URL: ${{ secrets.DATABASE_URL }}
     permissions:
       contents: "read"
       id-token: "write"
@@ -23,6 +25,12 @@ jobs:
 
       - name: deploy
         run: ./scripts/buildprod.sh
+
+      - name: install goose
+        run: go install github.com/pressly/goose/v3/cmd/goose@latest && goose -version
+
+      - name: update DB
+        run: ./scripts/migrateup.sh
 
       - id: "auth"
         uses: "google-github-actions/auth@v2"
