@@ -5,8 +5,11 @@ import (
 	"embed"
 	"io"
 	"log"
+	"log/slog"
 	"net/http"
 	"os"
+	"strings"
+	"time"
 
 	"github.com/go-chi/chi"
 	"github.com/go-chi/cors"
@@ -89,10 +92,13 @@ func main() {
 
 	router.Mount("/v1", v1Router)
 	srv := &http.Server{
-		Addr:    ":" + port,
-		Handler: router,
+		Addr:              ":" + port,
+		Handler:           router,
+		ReadHeaderTimeout: 10 * time.Second,
 	}
+	cleanAddr := strings.ReplaceAll(srv.Addr, "\n", "")
+	cleanAddr = strings.ReplaceAll(cleanAddr, "\r", "")
 
-	log.Printf("Serving on port: %s\n", port)
+	slog.Info("server started", "port", cleanAddr)
 	log.Fatal(srv.ListenAndServe())
 }
